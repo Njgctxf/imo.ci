@@ -29,13 +29,16 @@ export default function Auth() {
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('*') // Select all to see what we get
             .eq('user_id', user.id)
             .single();
           
           // Redirect based on role
-          const userRole = profile?.role || 'tenant';
-          navigate(userRole === 'owner' ? '/owner-dashboard' : '/tenant-dashboard');
+          // Check both role (new) and user_type (legacy)
+          const dbRole = profile?.role || profile?.user_type || 'tenant';
+          const isOwner = dbRole === 'owner' || dbRole === 'proprietaire';
+          
+          navigate(isOwner ? '/owner-dashboard' : '/tenant-dashboard');
         }
       } else {
         await signUp(email, password);
@@ -43,12 +46,25 @@ export default function Auth() {
         // Create profile with selected role
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase.from('profiles').upsert({
+          // Map role to user_type for database compatibility
+          // owner -> proprietaire, tenant -> locataire
+          const userType = role === 'owner' ? 'proprietaire' : 'locataire';
+
+          const { error: profileError } = await supabase.from('profiles').upsert({
+            id: user.id, // Using id as primary key based on common Supabase patterns
             user_id: user.id,
             full_name: name,
-            role: role,
+            user_type: userType, // Use legacy column name
+            // role: role, // Commente pour eviter erreur si colonne n'existe pas
             verified: false,
           });
+
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+            // If profile creation fails, we should probably not block the whole flow, 
+            // but for now let's just log it. The error caught below might be from signUp itself too.
+            throw profileError;
+          }
           
           // Redirect based on selected role
           navigate(role === 'owner' ? '/owner-dashboard' : '/tenant-dashboard');

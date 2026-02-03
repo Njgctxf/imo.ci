@@ -27,11 +27,16 @@ export default function ProfilePage() {
       if (error) throw error;
 
       if (data) {
+        // Handle legacy user_type if role is missing
+        // type assertion for legacy field
+        const anyData = data as any;
+        const dbRole = anyData.role || (anyData.user_type === 'proprietaire' ? 'owner' : 'tenant');
+        
         const profile = data as Profile;
         setFormData({
           full_name: profile.full_name || '',
           phone: profile.phone || '',
-          role: profile.role || 'tenant',
+          role: dbRole,
         });
       }
     } catch (error) {
@@ -51,12 +56,15 @@ export default function ProfilePage() {
     setSaving(true);
 
     try {
+      const userType = formData.role === 'owner' ? 'proprietaire' : 'locataire';
+
       const { error } = await supabase
         .from('profiles')
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
-          role: formData.role,
+          user_type: userType, // Update legacy column
+          // role: formData.role, // Keep for future migration but comment out if causing issues
           updated_at: new Date().toISOString(),
         })
         .eq('id', user?.id);
