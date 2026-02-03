@@ -70,9 +70,10 @@ export default function Auth() {
           navigate(role === 'owner' ? '/owner-dashboard' : '/tenant-dashboard');
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth error:', error);
-      alert(isLogin ? 'Erreur de connexion' : 'Erreur d\'inscription');
+      // Display specific error message
+      alert(error.message || (isLogin ? 'Erreur de connexion' : 'Erreur d\'inscription'));
     } finally {
       setLoading(false);
     }
