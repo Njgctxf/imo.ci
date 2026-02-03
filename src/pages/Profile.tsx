@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { User, Phone, Briefcase, Save, ArrowLeft } from 'lucide-react';
-import type { Profile } from '../types/database';
+import type { Profile, UserRole } from '../types/database';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
-    user_type: '' as 'proprietaire' | 'locataire' | '',
+    role: 'tenant' as UserRole,
   });
 
   const loadProfile = useCallback(async () => {
@@ -31,7 +31,7 @@ export default function ProfilePage() {
         setFormData({
           full_name: profile.full_name || '',
           phone: profile.phone || '',
-          user_type: profile.user_type || '',
+          role: profile.role || 'tenant',
         });
       }
     } catch (error) {
@@ -56,7 +56,7 @@ export default function ProfilePage() {
         .update({
           full_name: formData.full_name,
           phone: formData.phone,
-          user_type: formData.user_type,
+          role: formData.role,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user?.id);
@@ -154,13 +154,12 @@ export default function ProfilePage() {
                 </div>
                 <select
                   required
-                  value={formData.user_type}
-                  onChange={(e) => setFormData({ ...formData, user_type: e.target.value as 'proprietaire' | 'locataire' })}
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'owner' | 'tenant' })}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all appearance-none"
                 >
-                  <option value="">Sélectionnez...</option>
-                  <option value="proprietaire">Propriétaire</option>
-                  <option value="locataire">Locataire</option>
+                  <option value="tenant">Locataire</option>
+                  <option value="owner">Propriétaire</option>
                 </select>
               </div>
             </div>

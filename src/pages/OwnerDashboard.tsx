@@ -8,8 +8,6 @@ import {
   TrendingUp, 
   Bell,
   Calendar,
-  Users,
-  Settings,
   LogOut,
   Edit,
   Trash2

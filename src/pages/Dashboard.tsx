@@ -98,7 +98,7 @@ export default function Dashboard() {
     loadStats();
   }, [loadProfile, loadStats]);
 
-  const isProfileComplete = profile?.full_name && profile?.phone && profile?.user_type;
+  const isProfileComplete = profile?.full_name && profile?.phone && profile?.role;
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">

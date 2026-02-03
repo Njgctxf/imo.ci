@@ -6,12 +6,17 @@ import { ArrowLeft, MapPin, Home as HomeIcon, Bed, Bath, Maximize, Phone, Mail, 
 import { useFavorites } from '../hooks/useFavorites';
 import type { Property, Profile } from '../types/database';
 
+// Extend Profile to include email which might be fetched separately or inferred
+interface ProfileWithEmail extends Profile {
+  email?: string;
+}
+
 export default function PropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [property, setProperty] = useState<Property | null>(null);
-  const [owner, setOwner] = useState<Profile | null>(null);
+  const [owner, setOwner] = useState<ProfileWithEmail | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -34,11 +39,11 @@ export default function PropertyDetail() {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', propertyData.user_id)
+        .eq('id', propertyData.owner_id) // Updated from user_id to owner_id
         .single();
 
       if (profileError) throw profileError;
-      setOwner(profileData as Profile);
+      setOwner(profileData as ProfileWithEmail);
     } catch (error) {
       console.error('Error loading property:', error);
       alert('Erreur lors du chargement de l\'annonce');
@@ -79,7 +84,7 @@ export default function PropertyDetail() {
     );
   }
 
-  const isOwner = user?.id === property.user_id;
+  const isOwner = user?.id === property.owner_id;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

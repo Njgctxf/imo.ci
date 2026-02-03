@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { 
   Facebook, 
   Twitter, 
@@ -6,11 +5,7 @@ import {
   Linkedin, 
   Mail, 
   Phone, 
-  MapPin,
-  Home,
-  Building,
-  FileText,
-  HelpCircle
+  MapPin
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

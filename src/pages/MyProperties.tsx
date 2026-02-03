@@ -140,11 +140,11 @@ export default function MyProperties() {
                       {property.title}
                     </h3>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      property.is_available 
+                      property.status === 'available' 
                         ? 'bg-green-100 text-green-700' 
                         : 'bg-gray-100 text-gray-600'
                     }`}>
-                      {property.is_available ? 'Disponible' : 'Indisponible'}
+                      {property.status === 'available' ? 'Disponible' : 'Indisponible'}
                     </span>
                   </div>
 
@@ -167,11 +167,11 @@ export default function MyProperties() {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => toggleAvailability(property.id, property.is_available)}
+                      onClick={() => toggleAvailability(property.id, property.status === 'available')}
                       className="flex-1 flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                      title={property.is_available ? 'Marquer comme indisponible' : 'Marquer comme disponible'}
+                      title={property.status === 'available' ? 'Marquer comme indisponible' : 'Marquer comme disponible'}
                     >
-                      {property.is_available ? (
+                      {property.status === 'available' ? (
                         <EyeOff className="h-4 w-4" />
                       ) : (
                         <Eye className="h-4 w-4" />

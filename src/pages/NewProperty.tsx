@@ -4,16 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { 
-  Home, 
-  MapPin, 
   DollarSign, 
-  Image as ImageIcon,
   Bed,
   Bath,
   Maximize,
   Calendar,
-  ArrowLeft,
-  Upload
+  ArrowLeft
 } from 'lucide-react';
 import type { PropertyType, ListingType } from '../types/database';
 
@@ -60,7 +56,7 @@ export default function CreateProperty() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('properties')
         .insert({
           owner_id: user.id,

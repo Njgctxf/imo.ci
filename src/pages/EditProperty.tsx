@@ -19,7 +19,7 @@ export default function EditProperty() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    property_type: '' as 'appartement' | 'maison' | 'studio' | 'villa' | 'terrain' | '',
+    property_type: '' as 'apartment' | 'villa' | 'land' | 'office' | 'house' | '',
     price: '',
     location: '',
     bedrooms: '',
@@ -35,7 +35,7 @@ export default function EditProperty() {
         .from('properties')
         .select('*')
         .eq('id', id)
-        .eq('user_id', user.id) // Only allow owner to edit
+        .eq('owner_id', user.id) // Using owner_id instead of user_id
         .single();
 
       if (error) throw error;
@@ -238,15 +238,15 @@ export default function EditProperty() {
                 <select
                   required
                   value={formData.property_type}
-                  onChange={(e) => setFormData({ ...formData, property_type: e.target.value as 'appartement' | 'maison' | 'studio' | 'villa' | 'terrain' | '' })}
+                  onChange={(e) => setFormData({ ...formData, property_type: e.target.value as 'apartment' | 'villa' | 'land' | 'office' | 'house' | '' })}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all appearance-none"
                 >
                   <option value="">Sélectionnez...</option>
-                  <option value="appartement">Appartement</option>
-                  <option value="maison">Maison</option>
-                  <option value="studio">Studio</option>
+                  <option value="apartment">Appartement</option>
+                  <option value="house">Maison</option>
                   <option value="villa">Villa</option>
-                  <option value="terrain">Terrain</option>
+                  <option value="land">Terrain</option>
+                  <option value="office">Bureau</option>
                 </select>
               </div>
             </div>
