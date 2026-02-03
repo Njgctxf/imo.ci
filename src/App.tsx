@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Auth from './pages/Auth';
 import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
+import OwnerDashboard from './pages/OwnerDashboard';
+import TenantDashboard from './pages/TenantDashboard';
 import ProfilePage from './pages/Profile';
 import NewProperty from './pages/NewProperty';
 import EditProperty from './pages/EditProperty';
@@ -47,6 +49,8 @@ function App() {
           
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+            <Route path="/tenant-dashboard" element={<TenantDashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/new-property" element={<NewProperty />} />
             <Route path="/edit-property/:id" element={<EditProperty />} />
@@ -60,5 +64,6 @@ function App() {
     </AuthProvider>
   )
 }
+
 
 export default App

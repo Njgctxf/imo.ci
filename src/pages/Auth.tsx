@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, Home } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Home, Building2, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
+import type { UserRole } from '../types/database';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [role, setRole] = useState<UserRole>('tenant');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
@@ -20,10 +23,37 @@ export default function Auth() {
     try {
       if (isLogin) {
         await signIn(email, password);
+        
+        // Get user profile to check role
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('user_id', user.id)
+            .single();
+          
+          // Redirect based on role
+          const userRole = profile?.role || 'tenant';
+          navigate(userRole === 'owner' ? '/owner-dashboard' : '/tenant-dashboard');
+        }
       } else {
         await signUp(email, password);
+        
+        // Create profile with selected role
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from('profiles').upsert({
+            user_id: user.id,
+            full_name: name,
+            role: role,
+            verified: false,
+          });
+          
+          // Redirect based on selected role
+          navigate(role === 'owner' ? '/owner-dashboard' : '/tenant-dashboard');
+        }
       }
-      navigate('/dashboard');
     } catch (error) {
       console.error('Auth error:', error);
       alert(isLogin ? 'Erreur de connexion' : 'Erreur d\'inscription');
@@ -92,17 +122,56 @@ export default function Auth() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Nom complet"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-white/80 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    required
-                  />
-                </div>
+                <>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Nom complet"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 bg-white/80 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      required
+                    />
+                  </div>
+
+                  {/* Role Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Je suis :
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setRole('tenant')}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                          role === 'tenant'
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <Users className={`w-8 h-8 ${role === 'tenant' ? 'text-blue-600' : 'text-gray-400'}`} />
+                        <span className={`font-semibold ${role === 'tenant' ? 'text-blue-600' : 'text-gray-700'}`}>
+                          Locataire
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRole('owner')}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                          role === 'owner'
+                            ? 'border-purple-500 bg-purple-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <Building2 className={`w-8 h-8 ${role === 'owner' ? 'text-purple-600' : 'text-gray-400'}`} />
+                        <span className={`font-semibold ${role === 'owner' ? 'text-purple-600' : 'text-gray-700'}`}>
+                          Propriétaire
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="relative">

@@ -1,367 +1,412 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Home as HomeIcon, MapPin, DollarSign, Bed, Bath, Maximize, Upload, X } from 'lucide-react';
+import { 
+  Home, 
+  MapPin, 
+  DollarSign, 
+  Image as ImageIcon,
+  Bed,
+  Bath,
+  Maximize,
+  Calendar,
+  ArrowLeft,
+  Upload
+} from 'lucide-react';
+import type { PropertyType, ListingType } from '../types/database';
 
-export default function NewProperty() {
+export default function CreateProperty() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    property_type: '' as 'appartement' | 'maison' | 'studio' | 'villa' | 'terrain' | '',
+    property_type: 'apartment' as PropertyType,
+    listing_type: 'sale' as ListingType,
     price: '',
     location: '',
+    address: '',
+    city: '',
+    area_sqm: '',
     bedrooms: '',
     bathrooms: '',
-    area_sqm: '',
+    amenities: [] as string[],
+    available_from: '',
   });
 
+  const propertyTypes = [
+    { value: 'apartment', label: 'Appartement' },
+    { value: 'villa', label: 'Villa' },
+    { value: 'house', label: 'Maison' },
+    { value: 'land', label: 'Terrain' },
+    { value: 'office', label: 'Bureau' },
+  ];
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + imageFiles.length > 5) {
-      alert('Vous ne pouvez ajouter que 5 images maximum');
-      return;
-    }
-
-    // Add new files
-    setImageFiles(prev => [...prev, ...files]);
-
-    // Create previews
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const uploadImages = async (): Promise<string[]> => {
-    if (imageFiles.length === 0) return [];
-
-    setUploading(true);
-    const uploadedUrls: string[] = [];
-
-    try {
-      for (const file of imageFiles) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user?.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-
-        const { data, error } = await supabase.storage
-          .from('property-images')
-          .upload(fileName, file);
-
-        if (error) throw error;
-
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('property-images')
-          .getPublicUrl(data.path);
-
-        uploadedUrls.push(publicUrl);
-      }
-    } catch (error) {
-      console.error('Error uploading images:', error);
-      throw error;
-    } finally {
-      setUploading(false);
-    }
-
-    return uploadedUrls;
-  };
+  const amenitiesList = [
+    'Piscine', 'Jardin', 'Garage', 'Climatisation', 'Chauffage',
+    'Sécurité 24/7', 'Ascenseur', 'Balcon', 'Terrasse', 'Cuisine équipée'
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      alert('Vous devez être connecté');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Upload images first
-      const imageUrls = await uploadImages();
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('properties')
         .insert({
-          user_id: user?.id,
+          owner_id: user.id,
           title: formData.title,
-          description: formData.description || null,
-          property_type: formData.property_type || null,
+          description: formData.description,
+          property_type: formData.property_type,
+          listing_type: formData.listing_type,
           price: parseFloat(formData.price),
           location: formData.location,
+          address: formData.address,
+          city: formData.city,
+          area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
           bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
           bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
-          area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
-          is_available: true,
-          images: imageUrls,
-        });
+          amenities: formData.amenities,
+          available_from: formData.available_from || null,
+          status: 'available',
+          images: [], // You would handle image upload separately
+          views: 0,
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      alert('Annonce publiée avec succès !');
-      navigate('/my-properties');
+      alert('Propriété ajoutée avec succès !');
+      navigate('/owner-dashboard');
     } catch (error) {
       console.error('Error creating property:', error);
-      alert('Erreur lors de la publication de l\'annonce');
+      alert('Erreur lors de la création de la propriété');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const toggleAmenity = (amenity: string) => {
+    setFormData({
+      ...formData,
+      amenities: formData.amenities.includes(amenity)
+        ? formData.amenities.filter(a => a !== amenity)
+        : [...formData.amenities, amenity],
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour au tableau de bord
-        </button>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/owner-dashboard')}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Retour au tableau de bord
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Ajouter une propriété
+          </h1>
+          <p className="text-gray-600">
+            Remplissez les informations pour publier votre bien
+          </p>
+        </div>
 
-        <div className="bg-white rounded-2xl shadow-sm p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-display font-bold text-gray-900">
-              Publier une annonce
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Remplissez les informations de votre bien immobilier
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Titre */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Titre de l'annonce *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="block w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                placeholder="Ex: Appartement 2 pièces à Cocody"
-              />
-            </div>
-
-            {/* Type de bien */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Type de bien *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HomeIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <select
-                  required
-                  value={formData.property_type}
-                  onChange={(e) => setFormData({ ...formData, property_type: e.target.value as any })}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all appearance-none"
-                >
-                  <option value="">Sélectionnez...</option>
-                  <option value="appartement">Appartement</option>
-                  <option value="maison">Maison</option>
-                  <option value="studio">Studio</option>
-                  <option value="villa">Villa</option>
-                  <option value="terrain">Terrain</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Prix */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Prix mensuel (FCFA) *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <DollarSign className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                  placeholder="150000"
-                />
-              </div>
-            </div>
-
-            {/* Localisation */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Localisation *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MapPin className="h-5 w-5 text-gray-400" />
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Basic Information */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl p-8 shadow-sm"
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Informations de base</h2>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Titre de l'annonce *
+                </label>
                 <input
                   type="text"
+                  name="title"
                   required
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                  placeholder="Ex: Cocody, Riviera Palmeraie"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Ex: Belle villa moderne à Cocody"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="Décrivez votre propriété en détail..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type de bien *
+                  </label>
+                  <select
+                    name="property_type"
+                    required
+                    value={formData.property_type}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {propertyTypes.map(type => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Type d'annonce *
+                  </label>
+                  <select
+                    name="listing_type"
+                    required
+                    value={formData.listing_type}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="sale">À vendre</option>
+                    <option value="rent">À louer</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Prix (FCFA) *
+                </label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="number"
+                    name="price"
+                    required
+                    value={formData.price}
+                    onChange={handleChange}
+                    placeholder="50000000"
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Location */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-2xl p-8 shadow-sm"
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Localisation</h2>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ville *
+                  </label>
+                  <input
+                    type="text"
+                    name="city"
+                    required
+                    value={formData.city}
+                    onChange={handleChange}
+                    placeholder="Abidjan"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quartier *
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    required
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="Cocody"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Adresse complète
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Rue des Jardins, Cocody"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Details */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-2xl p-8 shadow-sm"
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Détails</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Bed className="w-4 h-4 inline mr-1" />
+                  Chambres
+                </label>
+                <input
+                  type="number"
+                  name="bedrooms"
+                  value={formData.bedrooms}
+                  onChange={handleChange}
+                  placeholder="3"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Bath className="w-4 h-4 inline mr-1" />
+                  Salles de bain
+                </label>
+                <input
+                  type="number"
+                  name="bathrooms"
+                  value={formData.bathrooms}
+                  onChange={handleChange}
+                  placeholder="2"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Maximize className="w-4 h-4 inline mr-1" />
+                  Surface (m²)
+                </label>
+                <input
+                  type="number"
+                  name="area_sqm"
+                  value={formData.area_sqm}
+                  onChange={handleChange}
+                  placeholder="150"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
 
-            {/* Nombre de chambres et salles de bain */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Chambres
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Bed className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.bedrooms}
-                    onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                    placeholder="2"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Salles de bain
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Bath className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.bathrooms}
-                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                    placeholder="1"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Surface (m²)
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Maximize className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    value={formData.area_sqm}
-                    onChange={(e) => setFormData({ ...formData, area_sqm: e.target.value })}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                    placeholder="75"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div>
+            <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
+                <Calendar className="w-4 h-4 inline mr-1" />
+                Disponible à partir du
               </label>
-              <textarea
-                rows={5}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="block w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none"
-                placeholder="Décrivez votre bien, les équipements, les points forts..."
+              <input
+                type="date"
+                name="available_from"
+                value={formData.available_from}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+          </motion.div>
 
-            {/* Images Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Photos (max 5)
-              </label>
-              
-              {/* Image previews */}
-              {imagePreviews.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                  {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={preview}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Upload button */}
-              {imageFiles.length < 5 && (
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-600">
-                      <span className="font-semibold">Cliquez pour ajouter</span> des photos
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      PNG, JPG, WEBP jusqu'à 10MB
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageSelect}
-                  />
-                </label>
-              )}
+          {/* Amenities */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-2xl p-8 shadow-sm"
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Équipements</h2>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {amenitiesList.map(amenity => (
+                <button
+                  key={amenity}
+                  type="button"
+                  onClick={() => toggleAmenity(amenity)}
+                  className={`px-4 py-3 rounded-xl border-2 transition-all ${
+                    formData.amenities.includes(amenity)
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  {amenity}
+                </button>
+              ))}
             </div>
+          </motion.div>
 
+          {/* Submit */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="flex gap-4"
+          >
+            <button
+              type="button"
+              onClick={() => navigate('/owner-dashboard')}
+              className="flex-1 px-6 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all"
+            >
+              Annuler
+            </button>
             <button
               type="submit"
-              disabled={loading || uploading}
-              className="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all disabled:opacity-70 shadow-lg shadow-brand-500/30"
+              disabled={loading}
+              className="flex-1 px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg disabled:opacity-50 transition-all"
             >
-              {loading ? (
-                uploading ? 'Upload des images...' : 'Publication...'
-              ) : (
-                <>
-                  <Save className="h-5 w-5 mr-2" />
-                  Publier l'annonce
-                </>
-              )}
+              {loading ? 'Publication...' : 'Publier la propriété'}
             </button>
-          </form>
-        </div>
+          </motion.div>
+        </form>
       </div>
     </div>
   );
