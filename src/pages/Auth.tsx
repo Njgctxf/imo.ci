@@ -30,7 +30,7 @@ export default function Auth() {
           const { data: profile } = await supabase
             .from('profiles')
             .select('*') // Select all to see what we get
-            .eq('user_id', user.id)
+            .eq('id', user.id) // Changed from user_id to id
             .single();
           
           // Redirect based on role
@@ -51,8 +51,8 @@ export default function Auth() {
           const userType = role === 'owner' ? 'proprietaire' : 'locataire';
 
           const { error: profileError } = await supabase.from('profiles').upsert({
-            id: user.id, // Using id as primary key based on common Supabase patterns
-            user_id: user.id,
+            id: user.id, // This is the Primary Key which IS the user_id
+            // user_id: user.id, // Removing this causing error: "Could not find the 'user_id' column"
             full_name: name,
             user_type: userType, // Use legacy column name
             // role: role, // Commente pour eviter erreur si colonne n'existe pas
