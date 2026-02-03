@@ -1,378 +1,228 @@
-import HeroParallax from '../components/HeroParallax';
-import Navbar from '../components/Navbar';
-import { Link } from 'react-router-dom';
-import { Home, Shield, TrendingUp, ArrowRight } from 'lucide-react';
+import ModernNavbar from '../components/ModernNavbar';
+import ModernHero from '../components/ModernHero';
+import FeaturedProperties from '../components/FeaturedProperties';
+import ModernFooter from '../components/ModernFooter';
 import { motion } from 'framer-motion';
+import { Shield, Users, Award, TrendingUp, Building2, Clock } from 'lucide-react';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navbar */}
-      <Navbar />
+      <ModernNavbar />
+      <ModernHero />
       
-      {/* Hero Parallax Section */}
-      <HeroParallax />
-
-      {/* Search Bar - Floating above blue section */}
-      <div className="relative -mb-12 z-50 flex justify-center px-8">
-        <div className="w-full max-w-4xl bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl p-4 md:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
-              <span className="text-gray-400">📍</span>
-              <input
-                type="text"
-                placeholder="Localisation"
-                className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-sm md:text-base"
-              />
-            </div>
-
-            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
-              <span className="text-gray-400">📅</span>
-              <input
-                type="text"
-                placeholder="Date d'entrée"
-                className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-sm md:text-base"
-              />
-            </div>
-
-            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
-              <span className="text-gray-400">👥</span>
-              <input
-                type="text"
-                placeholder="Pièces"
-                className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-sm md:text-base"
-              />
-            </div>
-
-            <button className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg hover:scale-105">
-              🔍
-              <span className="hidden md:inline">Rechercher</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Bar */}
-      <section className="bg-gradient-to-r from-brand-600 to-brand-700 py-12 pt-16 relative z-10">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center items-center">
-            {[
-              { number: '500+', label: 'Propriétés' },
-              { number: '12', label: 'Villes' },
-              { number: '1200+', label: 'Clients Satisf' },
-              { number: '98%', label: 'Taux de satisf.' },
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="text-4xl font-bold text-white mb-2">{stat.number}</div>
-                <div className="text-white/80">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Recommended Places to Stay */}
-      <section className="py-16 md:py-24 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
-        <div className="max-w-7xl mx-auto px-8">
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-12">
-            <motion.h2
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-4xl font-bold text-gray-900"
-            >
-              Lieux Recommandés à Louer
-            </motion.h2>
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="px-6 py-2 bg-white hover:bg-gray-50 text-gray-900 font-medium rounded-full border border-gray-200 transition-all hover:scale-105"
-            >
-              Voir tout
-            </motion.button>
-          </div>
-
-          {/* Property Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                image: '/hero-1/maison-1.png',
-                price: '150 000 FCFA',
-                name: 'Villa de Luxe Pearl',
-                location: 'Cocody, Abidjan',
-                rating: 4.8,
-              },
-              {
-                image: '/hero-2/maison-2.png',
-                price: '200 000 FCFA',
-                name: 'Villa Palm City',
-                location: 'Marcory, Abidjan',
-                rating: 4.9,
-              },
-              {
-                image: '/hero-3/maison-3.png',
-                price: '120 000 FCFA',
-                name: 'Appartement Viva Balifago',
-                location: 'Plateau, Abidjan',
-                rating: 4.6,
-              },
-              {
-                image: '/hero-1/background-1.png',
-                price: '180 000 FCFA',
-                name: 'Quartier Calme',
-                location: 'Angré, Abidjan',
-                rating: 4.7,
-              },
-            ].map((property, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="group relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
-              >
-                {/* Property Image */}
-                <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={property.image}
-                    alt={property.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  
-                  {/* Price Badge */}
-                  <div className="absolute top-4 left-4 px-4 py-2 bg-white/95 backdrop-blur-sm rounded-full shadow-lg">
-                    <span className="text-sm font-semibold text-gray-900">
-                      {property.price} <span className="text-gray-600">/mois</span>
-                    </span>
-                  </div>
-
-                  {/* Heart Icon */}
-                  <button className="absolute top-4 right-4 w-10 h-10 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-                    <span className="text-xl">🤍</span>
-                  </button>
-                </div>
-
-                {/* Property Info */}
-                <div className="p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    {property.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    📍 {property.location}
-                  </p>
-                  
-                  {/* Rating */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span
-                          key={star}
-                          className={`text-sm ${
-                            star <= Math.floor(property.rating)
-                              ? 'text-yellow-500'
-                              : 'text-gray-300'
-                          }`}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">
-                      {property.rating}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
+            >
               Pourquoi choisir ImmoCI ?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              La plateforme de référence pour la location immobilière en Côte d'Ivoire
-            </p>
-          </motion.div>
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-xl text-gray-600 max-w-2xl mx-auto"
+            >
+              Une expérience immobilière unique et sécurisée
+            </motion.p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              {
-                icon: Home,
-                title: 'Large sélection',
-                description: 'Des centaines de propriétés vérifiées dans toute la Côte d\'Ivoire',
-                color: 'blue',
-              },
               {
                 icon: Shield,
-                title: 'Sécurisé & Vérifié',
-                description: 'Toutes nos annonces sont vérifiées pour votre sécurité',
-                color: 'green',
+                title: 'Sécurité garantie',
+                description: 'Toutes nos annonces sont vérifiées et sécurisées',
+                color: 'from-blue-500 to-blue-600',
+              },
+              {
+                icon: Users,
+                title: 'Accompagnement',
+                description: 'Une équipe d\'experts à votre service 24/7',
+                color: 'from-purple-500 to-purple-600',
+              },
+              {
+                icon: Award,
+                title: 'Qualité Premium',
+                description: 'Sélection rigoureuse des meilleures propriétés',
+                color: 'from-pink-500 to-pink-600',
               },
               {
                 icon: TrendingUp,
-                title: 'Meilleurs prix',
-                description: 'Prix transparents et compétitifs, sans frais cachés',
-                color: 'purple',
+                title: 'Meilleur prix',
+                description: 'Prix transparents et négociés pour vous',
+                color: 'from-green-500 to-green-600',
+              },
+              {
+                icon: Building2,
+                title: 'Large choix',
+                description: 'Des milliers de propriétés dans toute la CI',
+                color: 'from-orange-500 to-orange-600',
+              },
+              {
+                icon: Clock,
+                title: 'Rapidité',
+                description: 'Trouvez votre bien en quelques minutes',
+                color: 'from-cyan-500 to-cyan-600',
               },
             ].map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
                 viewport={{ once: true }}
-                whileHover={{ y: -10 }}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all"
+                transition={{ delay: index * 0.1 }}
+                className="group"
               >
-                <div className={`w-16 h-16 rounded-xl bg-${feature.color}-100 flex items-center justify-center mb-6`}>
-                  <feature.icon className={`h-8 w-8 text-${feature.color}-600`} />
+                <div className="relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-transparent overflow-hidden">
+                  {/* Gradient Background on Hover */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+                  
+                  <div className="relative z-10">
+                    {/* Icon */}
+                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                      <feature.icon className="w-8 h-8 text-white" />
+                    </div>
+
+                    {/* Content */}
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                      {feature.title}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-8">
+      <FeaturedProperties />
+
+      {/* Stats Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-600 to-purple-600 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYgMi42ODYgNiA2cy0yLjY4NiA2LTYgNi02LTIuNjg2LTYtNiAyLjY4Ni02IDYtNnoiIHN0cm9rZT0iI0ZGRiIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9nPjwvc3ZnPg==')] " />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
-              Comment ça marche ?
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              ImmoCI en chiffres
             </h2>
-            <p className="text-xl text-gray-600">
-              Trouvez votre logement idéal en 3 étapes simples
+            <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+              La confiance de milliers de clients
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-            {/* Connection Line */}
-            <div className="hidden md:block absolute top-24 left-0 right-0 h-1 bg-gradient-to-r from-brand-600 via-brand-500 to-brand-600" />
-
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              {
-                step: '01',
-                title: 'Recherchez',
-                description: 'Parcourez notre catalogue de propriétés et utilisez nos filtres',
-              },
-              {
-                step: '02',
-                title: 'Visitez',
-                description: 'Contactez le propriétaire et planifiez une visite',
-              },
-              {
-                step: '03',
-                title: 'Louez',
-                description: 'Signez votre contrat et emménagez dans votre nouveau chez-vous',
-              },
-            ].map((step, index) => (
+              { number: '5,000+', label: 'Propriétés', suffix: '' },
+              { number: '2,000+', label: 'Clients satisfaits', suffix: '' },
+              { number: '15+', label: 'Villes couvertes', suffix: '' },
+              { number: '98', label: 'Satisfaction client', suffix: '%' },
+            ].map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.5 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
                 viewport={{ once: true }}
-                className="relative text-center"
+                transition={{ delay: index * 0.1, type: 'spring' }}
+                className="text-center"
               >
-                <div className="w-48 h-48 mx-auto mb-6 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-6xl font-bold shadow-2xl relative z-10">
-                  {step.step}
+                <div className="text-5xl md:text-6xl font-bold text-white mb-2">
+                  {stat.number}
+                  <span className="text-blue-200">{stat.suffix}</span>
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-3">{step.title}</h3>
-                <p className="text-gray-600">{step.description}</p>
+                <div className="text-lg text-blue-100">{stat.label}</div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-brand-600 via-brand-700 to-brand-800 relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0">
-          {[...Array(3)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-96 h-96 rounded-full bg-white/5 blur-3xl"
-              animate={{
-                x: ['0%', '100%', '0%'],
-                y: ['0%', '50%', '0%'],
-              }}
-              transition={{
-                duration: 20 + i * 5,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-              style={{
-                left: `${i * 30}%`,
-                top: `${i * 20}%`,
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="max-w-4xl mx-auto px-8 text-center relative z-10">
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
+            className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-6">
-              Prêt à trouver votre chez-vous ?
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Ce que disent nos clients
             </h2>
-            <p className="text-xl text-white/90 mb-8">
-              Rejoignez des milliers de personnes qui ont trouvé leur logement idéal avec ImmoCI
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Des milliers de familles heureuses
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/auth"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white text-brand-600 font-semibold rounded-xl hover:bg-gray-100 transition-all shadow-2xl hover:scale-105"
-              >
-                Commencer maintenant
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-              <Link
-                to="/search"
-                className="inline-flex items-center justify-center px-8 py-4 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-semibold rounded-xl transition-all border border-white/30 hover:scale-105"
-              >
-                Explorer les annonces
-              </Link>
-            </div>
           </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: 'Marie Kouassi',
+                role: 'Propriétaire',
+                comment: 'J\'ai trouvé ma maison de rêve en moins d\'une semaine ! Service exceptionnel.',
+                rating: 5,
+              },
+              {
+                name: 'Jean Traoré',
+                role: 'Investisseur',
+                comment: 'Plateforme professionnelle et équipe très réactive. Je recommande vivement.',
+                rating: 5,
+              },
+              {
+                name: 'Fatou Diallo',
+                role: 'Locataire',
+                comment: 'Interface intuitive et propriétés de qualité. Mon expérience a été parfaite.',
+                rating: 5,
+              },
+            ].map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all"
+              >
+                <div className="flex gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  "{testimonial.comment}"
+                </p>
+                <div>
+                  <p className="font-bold text-gray-900">{testimonial.name}</p>
+                  <p className="text-sm text-gray-500">{testimonial.role}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
+
+      <ModernFooter />
     </div>
   );
 }
