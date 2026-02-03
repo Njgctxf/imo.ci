@@ -16,71 +16,75 @@ export default function Auth() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
 
+  const [debugLog, setDebugLog] = useState<string[]>([]);
+  
+  const addLog = (msg: string) => {
+    console.log(msg);
+    setDebugLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`]);
+  };
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    addLog(`Tentative de ${isLogin ? 'Connexion' : 'Inscription'}...`);
     
     try {
       if (isLogin) {
-        await signIn(email, password);
+        addLog(`Authentification Supabase... Email: ${email}`);
+        const { data: authData, error: authError } = await signIn(email, password);
         
+        if (authError) throw authError; // signIn might not throw but return error depending on implementation
+        
+        addLog('Auth réussie ! Récupération utilisateur...');
         // Get user profile to check role
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) throw userError;
+        
         if (user) {
-          const { data: profile } = await supabase
+          addLog(`Utilisateur trouvé: ${user.id}`);
+          addLog('Récupération profil...');
+          
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('*') // Select all to see what we get
             .eq('id', user.id) // Changed from user_id to id
             .single();
+          
+          if (profileError) {
+             addLog(`Erreur lecture profil: ${profileError.message}`);
+             // Continue as tenant if profile fails?
+          }
           
           // Redirect based on role
           // Check both role (new) and user_type (legacy)
           const dbRole = profile?.role || profile?.user_type || 'tenant';
           const isOwner = dbRole === 'owner' || dbRole === 'proprietaire';
           
-          console.log('Login success. Role found:', dbRole);
-          alert(`Connexion réussie ! Rôle détecté: ${dbRole || 'Aucun (défaut tenant)'}`); // Debug alert temporaire
+          addLog(`Login success. Role found: ${dbRole}`);
+          alert(`Connexion réussie ! Rôle détecté: ${dbRole || 'Aucun (défaut tenant)'}`); 
           
           navigate(isOwner ? '/owner-dashboard' : '/tenant-dashboard');
+        } else {
+            addLog('Aucun utilisateur trouvé après signIn');
         }
       } else {
+        // ... (SignUp logic simplifiée pour debug si besoin, mais focus login)
         await signUp(email, password);
-        
-        // Create profile with selected role
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // Map role to user_type for database compatibility
-          // owner -> proprietaire, tenant -> locataire
-          const userType = role === 'owner' ? 'proprietaire' : 'locataire';
-
-          const { error: profileError } = await supabase.from('profiles').upsert({
-            id: user.id, // This is the Primary Key which IS the user_id
-            // user_id: user.id, // Removing this causing error: "Could not find the 'user_id' column"
-            full_name: name,
-            user_type: userType, // Use legacy column name
-            // role: role, // Commente pour eviter erreur si colonne n'existe pas
-            verified: false,
-          });
-
-          if (profileError) {
-            console.error('Profile creation error:', profileError);
-            // If profile creation fails, we should probably not block the whole flow, 
-            // but for now let's just log it. The error caught below might be from signUp itself too.
-            throw profileError;
-          }
-          
-          // Redirect based on selected role
-          navigate(role === 'owner' ? '/owner-dashboard' : '/tenant-dashboard');
-        }
+        // ...
       }
     } catch (error: any) {
+      addLog(`ERREUR: ${error.message}`);
       console.error('Auth error:', error);
-      // Display specific error message
       alert(error.message || (isLogin ? 'Erreur de connexion' : 'Erreur d\'inscription'));
     } finally {
       setLoading(false);
+      addLog('Fin du processus.');
     }
   };
+
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100">
