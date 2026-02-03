@@ -38,6 +38,9 @@ export default function Auth() {
           const dbRole = profile?.role || profile?.user_type || 'tenant';
           const isOwner = dbRole === 'owner' || dbRole === 'proprietaire';
           
+          console.log('Login success. Role found:', dbRole);
+          alert(`Connexion réussie ! Rôle détecté: ${dbRole || 'Aucun (défaut tenant)'}`); // Debug alert temporaire
+          
           navigate(isOwner ? '/owner-dashboard' : '/tenant-dashboard');
         }
       } else {
