@@ -235,7 +235,11 @@ export default function Auth() {
                 disabled={loading}
                 className="w-16 h-16 bg-gray-900 hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 disabled:opacity-50 disabled:hover:scale-100 ml-auto"
               >
-                <ArrowRight className="w-6 h-6" />
+                {loading ? (
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <ArrowRight className="w-6 h-6" />
+                )}
               </button>
             </form>
 
