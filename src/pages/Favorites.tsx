@@ -31,10 +31,10 @@ export default function Favorites() {
       if (error) throw error;
 
       // Transform the data to flatten the structure
-      const favoriteProperties = data
+      const favoriteProperties = (data || [])
         .filter(f => f.properties) // Filter out deleted properties
         .map(f => ({
-          ...(f.properties as Property),
+          ...(f.properties as any),
           favorite_id: f.id,
         })) as PropertyWithFavorite[];
 

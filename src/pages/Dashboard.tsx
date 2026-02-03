@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { Link } from 'react-router-dom';
-import { AlertCircle, User, Home, Search, Heart, Plus, Eye, TrendingUp } from 'lucide-react';
+import { AlertCircle, User, Home, Search, Heart, Eye, TrendingUp } from 'lucide-react';
 import type { Profile } from '../types/database';
 
 type Stats = {
