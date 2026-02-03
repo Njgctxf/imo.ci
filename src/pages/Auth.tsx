@@ -33,9 +33,7 @@ export default function Auth() {
     try {
       if (isLogin) {
         addLog(`Authentification Supabase... Email: ${email}`);
-        const { data: authData, error: authError } = await signIn(email, password);
-        
-        if (authError) throw authError; // signIn might not throw but return error depending on implementation
+        await signIn(email, password);
         
         addLog('Auth réussie ! Récupération utilisateur...');
         // Get user profile to check role
@@ -71,9 +69,40 @@ export default function Auth() {
             addLog('Aucun utilisateur trouvé après signIn');
         }
       } else {
-        // ... (SignUp logic simplifiée pour debug si besoin, mais focus login)
+        addLog('Tentative Inscription Supabase...');
         await signUp(email, password);
-        // ...
+        
+        addLog('Inscription Auth réussie ! Création profil...');
+        
+        // Create profile with selected role
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) throw userError;
+
+        if (user) {
+          // Map role to user_type for database compatibility
+          // owner -> proprietaire, tenant -> locataire
+          const userType = role === 'owner' ? 'proprietaire' : 'locataire';
+
+          addLog(`Création profil pour ${user.id} avec type ${userType}`);
+
+          const { error: profileError } = await supabase.from('profiles').upsert({
+            id: user.id,
+            full_name: name,
+            user_type: userType,
+            verified: false,
+          });
+
+          if (profileError) {
+            addLog(`ERREUR création profil: ${profileError.message}`);
+            console.error('Profile creation error:', profileError);
+            throw profileError;
+          }
+          
+          addLog('Profil créé ! Redirection...');
+          // Redirect based on selected role
+          navigate(role === 'owner' ? '/owner-dashboard' : '/tenant-dashboard');
+        }
       }
     } catch (error: any) {
       addLog(`ERREUR: ${error.message}`);
@@ -315,6 +344,16 @@ export default function Auth() {
             </div>
           </motion.div>
         </div>
+        
+        {/* Debug Logs Section - Visible ONLY if logs exist */}
+        {debugLog.length > 0 && (
+          <div className="w-full max-w-5xl mt-8 bg-black/80 text-green-400 p-4 rounded-xl font-mono text-xs h-40 overflow-y-auto mb-20 whitespace-pre-wrap z-50 relative pointer-events-auto">
+            <h3 className="text-white border-b border-gray-700 pb-2 mb-2 font-bold">LOGS DE DÉBOGAGE (Prendre une photo si erreur)</h3>
+            {debugLog.map((log, i) => (
+              <div key={i}>{log}</div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
